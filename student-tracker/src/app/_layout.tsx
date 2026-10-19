@@ -1,27 +1,32 @@
-import { Stack } from 'expo-router';
+import { Suspense, useEffect } from 'react';
+import * as SplashScreen from 'expo-splash-screen';
 import { SQLiteProvider } from 'expo-sqlite';
-import { useFonts, Fraunces_600SemiBold } from '@expo-google-fonts/fraunces';
-import {
-  DMSans_400Regular,
-  DMSans_500Medium,
-  DMSans_600SemiBold,
-  DMSans_700Bold,
-} from '@expo-google-fonts/dm-sans';
-import { initDb } from '@/db/schema';
+import { LoadingScreen } from '@/components/LoadingScreen';
+import { ThemedStack } from '@/components/ThemedStack';
+import { ThemedStatusBar } from '@/components/ThemedStatusBar';
+import { initializeDatabase } from '@/db/initialize';
+import { ThemeProvider } from '@/theme';
+import { useAppFonts } from '@/theme/useAppFonts';
+
+SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const [loaded] = useFonts({
-    Fraunces_600SemiBold,
-    DMSans_400Regular,
-    DMSans_500Medium,
-    DMSans_600SemiBold,
-    DMSans_700Bold,
-  });
-  if (!loaded) return null;
+  const fontsReady = useAppFonts();
+
+  useEffect(() => {
+    if (fontsReady) SplashScreen.hideAsync();
+  }, [fontsReady]);
+
+  if (!fontsReady) return null;
 
   return (
-    <SQLiteProvider databaseName="asap.db" onInit={initDb}>
-      <Stack screenOptions={{ headerShown: false }} />
-    </SQLiteProvider>
+    <ThemeProvider>
+      <ThemedStatusBar />
+      <Suspense fallback={<LoadingScreen />}>
+        <SQLiteProvider databaseName="asap.db" onInit={initializeDatabase} useSuspense>
+          <ThemedStack />
+        </SQLiteProvider>
+      </Suspense>
+    </ThemeProvider>
   );
 }

@@ -13,7 +13,8 @@ import {
 import { useRouter, useFocusEffect } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-react-native';
-import { colors, fonts, radius, subjectColors } from '@/constants/theme';
+import { fonts, radius, subjectColors } from '@/constants/theme';
+import { useTheme } from '@/theme';
 
 type Subject = {
   id: number;
@@ -30,6 +31,7 @@ function initials(name: string) {
 }
 
 export default function SubjectsScreen() {
+  const { colors } = useTheme();
   const db = useSQLiteContext();
   const router = useRouter();
 
@@ -40,6 +42,18 @@ export default function SubjectsScreen() {
   const [teacher, setTeacher] = useState('');
   const [units, setUnits] = useState('3');
   const [color, setColor] = useState(subjectColors[0]);
+
+  const inputStyle = {
+  height: 48,
+  borderWidth: 1,
+  borderColor: colors.border,
+  borderRadius: radius.md,
+  paddingHorizontal: 14,
+  fontFamily: fonts.regular,
+  fontSize: 16,
+  color: colors.text,
+  backgroundColor: colors.bg,
+} as const;
 
   const load = useCallback(async () => {
     const rows = await db.getAllAsync<Subject>('SELECT * FROM subjects ORDER BY name');
@@ -301,15 +315,3 @@ export default function SubjectsScreen() {
     </View>
   );
 }
-
-const inputStyle = {
-  height: 48,
-  borderWidth: 1,
-  borderColor: colors.border,
-  borderRadius: radius.md,
-  paddingHorizontal: 14,
-  fontFamily: fonts.regular,
-  fontSize: 16,
-  color: colors.text,
-  backgroundColor: colors.bg,
-} as const;

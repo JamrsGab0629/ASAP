@@ -1,32 +1,34 @@
-import { useEffect, useState } from 'react';
-import { Text, View } from 'react-native';
-import { useSQLiteContext } from 'expo-sqlite';
-import { colors, fonts } from '../constants/theme';
-import { Link } from 'expo-router';
+import { ScrollView, View } from 'react-native';
+import { SectionHeader } from '@/components/SectionHeader';
+import { space } from '@/constants/theme';
+import { DashboardHeader } from '@/features/dashboard/components/DashboardHeader';
+import { DueSoonList } from '@/features/dashboard/components/DueSoonList';
+import { NextClassCard } from '@/features/dashboard/components/NextClassCard';
+import { SettingsButton } from '@/features/dashboard/components/SettingsButton';
+import { TileGrid } from '@/features/dashboard/components/TileGrid';
+import { useDashboard } from '@/features/dashboard/useDashboard';
+import { formatLongDate } from '@/lib/dates';
+import { useTheme } from '@/theme';
 
+export default function HomeScreen() {
+  const { colors } = useTheme();
+  const data = useDashboard();
 
-export default function Home() {
-  const db = useSQLiteContext();
-  const [count, setCount] = useState<number | null>(null);
-
-  useEffect(() => {
-    db.getFirstAsync<{ c: number }>('SELECT COUNT(*) AS c FROM subjects').then((r) =>
-      setCount(r?.c ?? 0)
-    );
-  }, [db]);
+  if (!data) return <View style={{ flex: 1, backgroundColor: colors.bg }} />;
 
   return (
-    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.bg }}>
-      <Text style={{ fontFamily: fonts.serif, fontSize: 32, color: colors.text }}>ASAP</Text>
-      <Text style={{ fontFamily: fonts.regular, color: colors.textMuted, marginTop: 8 }}>
-        Database ready · {count ?? '…'} subjects
-      </Text>
-      <Link
-  href="/subjects"
-  style={{ marginTop: 24, fontFamily: fonts.semibold, fontSize: 16, color: colors.primary }}
->
-  Open Subjects
-</Link>
-    </View>
+    <ScrollView
+      style={{ flex: 1, backgroundColor: colors.bg }}
+      contentContainerStyle={{ paddingTop: 40, paddingHorizontal: space.xl, paddingBottom: 40, gap: space.xxl }}
+    >
+      <SettingsButton />
+      <DashboardHeader dateLabel={formatLongDate(new Date())} headline={data.headline} />
+      <NextClassCard next={data.nextClass} />
+      <TileGrid tiles={data.tiles} />
+      <View style={{ gap: space.md }}>
+        <SectionHeader title="Due soon" />
+        <DueSoonList deadlines={data.deadlines} />
+      </View>
+    </ScrollView>
   );
 }

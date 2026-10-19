@@ -10,6 +10,7 @@ export const colors = {
   success: '#2E6B45',
   warning: '#8A5A0F',
   danger: '#8F2D26',
+  onPrimaryMuted: '#CFE3D6',
 };
 
 // Muted subject colors (no bright greens, so they don't look like "selected")
