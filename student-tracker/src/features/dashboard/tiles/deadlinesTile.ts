@@ -7,7 +7,7 @@ export const deadlinesTile: TileProvider = {
   id: 'deadlines',
   label: 'Deadlines',
   icon: Flag,
-  href: null,
+  href: '/deadlines',
   async load(db, today) {
     const count = await countOpenDueOnOrBefore(db, toISODate(addDays(today, 7)));
     return { text: count === 0 ? 'All clear' : `${count} due soon` };

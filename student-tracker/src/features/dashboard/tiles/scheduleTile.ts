@@ -7,7 +7,7 @@ export const scheduleTile: TileProvider = {
   id: 'schedule',
   label: 'Schedule',
   icon: CalendarDays,
-  href: null,
+  href: '/schedule',
   async load(db, today) {
     const classes = await getClassesForDate(db, today);
     return { text: classes.length === 0 ? 'No classes today' : `${plural(classes.length, 'class', 'classes')} today` };
