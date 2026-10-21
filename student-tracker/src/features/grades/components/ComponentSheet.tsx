@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { Alert } from 'react-native';
 import type { ComponentDraft, GradeComponent } from '../types';
 import { parseComponent } from '../validateGrade';
-import { FormField } from './FormField';
-import { FormSheet } from './FormSheet';
+import { FormField } from '../../../components/FormField';
+import { FormSheet } from '../../../components/FormSheet';
 
 type Props = {
   periodId: number;

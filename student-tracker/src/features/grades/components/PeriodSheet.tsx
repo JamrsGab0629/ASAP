@@ -4,8 +4,8 @@ import { fonts, space } from '@/constants/theme';
 import { useTheme } from '@/theme';
 import type { GradePeriod, PeriodDraft } from '../types';
 import { parsePeriod } from '../validateGrade';
-import { FormField } from './FormField';
-import { FormSheet } from './FormSheet';
+import { FormField } from '../../../components/FormField';
+import { FormSheet } from '../../../components/FormSheet';
 
 type Props = {
   subjectId: number;

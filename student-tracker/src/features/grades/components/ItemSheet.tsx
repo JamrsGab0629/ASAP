@@ -3,8 +3,8 @@ import { Alert, View } from 'react-native';
 import { space } from '@/constants/theme';
 import type { GradeComponent, GradeItem, ItemDraft } from '../types';
 import { parseItem } from '../validateGrade';
-import { FormField } from './FormField';
-import { FormSheet } from './FormSheet';
+import { FormField } from '../../../components/FormField';
+import { FormSheet } from '../../../components/FormSheet';
 
 type Props = {
   component: GradeComponent;
