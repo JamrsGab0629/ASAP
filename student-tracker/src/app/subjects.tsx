@@ -15,7 +15,8 @@ import { useSQLiteContext } from 'expo-sqlite';
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-react-native';
 import { fonts, radius, subjectColors } from '@/constants/theme';
 import { useTheme } from '@/theme';
-
+import { GradeBadge } from '@/features/grades/components/GradeBadge';
+import { useSubjectStandings } from '@/features/grades/useSubjectStandings';
 type Subject = {
   id: number;
   name: string;
@@ -34,6 +35,7 @@ export default function SubjectsScreen() {
   const { colors } = useTheme();
   const db = useSQLiteContext();
   const router = useRouter();
+  const standings = useSubjectStandings();
 
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [visible, setVisible] = useState(false);
@@ -212,6 +214,10 @@ export default function SubjectsScreen() {
                 {item.units} units
               </Text>
             </View>
+            <GradeBadge
+  percent={standings.get(item.id)}
+  onPress={() => router.push({ pathname: '/grades', params: { subjectId: String(item.id) } })}
+/>
             <ChevronRight size={18} color={colors.textMuted} />
           </Pressable>
         )}
