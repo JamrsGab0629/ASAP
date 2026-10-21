@@ -1,34 +1,48 @@
 import type { SQLiteDatabase } from 'expo-sqlite';
-import type { GradeComponent, GradeItem, GradeScale } from './types';
+import type { GradeComponent, GradeItem, GradePeriod, GradeScale } from './types';
 
+type PeriodRow = Omit<GradePeriod, 'components'>;
 type ComponentRow = Omit<GradeComponent, 'items'>;
 
-async function attachItems(db: SQLiteDatabase, rows: ComponentRow[]): Promise<GradeComponent[]> {
+function groupBy<T, K>(rows: T[], key: (row: T) => K): Map<K, T[]> {
+  const groups = new Map<K, T[]>();
+  for (const row of rows) {
+    const list = groups.get(key(row)) ?? [];
+    list.push(row);
+    groups.set(key(row), list);
+  }
+  return groups;
+}
+
+async function attachChildren(db: SQLiteDatabase, periods: PeriodRow[]): Promise<GradePeriod[]> {
+  const components = await db.getAllAsync<ComponentRow>(
+    `SELECT id, period_id AS periodId, name, weight FROM grade_components ORDER BY id`,
+  );
   const items = await db.getAllAsync<GradeItem>(
     `SELECT id, component_id AS componentId, title, score, max_score AS maxScore FROM grade_items ORDER BY id`,
   );
-  const byComponent = new Map<number, GradeItem[]>();
-  for (const item of items) {
-    const list = byComponent.get(item.componentId) ?? [];
-    list.push(item);
-    byComponent.set(item.componentId, list);
-  }
-  return rows.map((row) => ({ ...row, items: byComponent.get(row.id) ?? [] }));
+  const itemsByComponent = groupBy(items, (i) => i.componentId);
+  const componentsByPeriod = groupBy(components, (c) => c.periodId);
+
+  return periods.map((period) => ({
+    ...period,
+    components: (componentsByPeriod.get(period.id) ?? []).map((c) => ({ ...c, items: itemsByComponent.get(c.id) ?? [] })),
+  }));
 }
 
-export async function listComponents(db: SQLiteDatabase, subjectId: number): Promise<GradeComponent[]> {
-  const rows = await db.getAllAsync<ComponentRow>(
-    `SELECT id, subject_id AS subjectId, name, weight FROM grade_components WHERE subject_id = ? ORDER BY id`,
+export async function listPeriods(db: SQLiteDatabase, subjectId: number): Promise<GradePeriod[]> {
+  const rows = await db.getAllAsync<PeriodRow>(
+    `SELECT id, subject_id AS subjectId, name, weight FROM grade_periods WHERE subject_id = ? ORDER BY id`,
     subjectId,
   );
-  return attachItems(db, rows);
+  return attachChildren(db, rows);
 }
 
-export async function listAllComponents(db: SQLiteDatabase): Promise<GradeComponent[]> {
-  const rows = await db.getAllAsync<ComponentRow>(
-    `SELECT id, subject_id AS subjectId, name, weight FROM grade_components ORDER BY id`,
+export async function listAllPeriods(db: SQLiteDatabase): Promise<GradePeriod[]> {
+  const rows = await db.getAllAsync<PeriodRow>(
+    `SELECT id, subject_id AS subjectId, name, weight FROM grade_periods ORDER BY id`,
   );
-  return attachItems(db, rows);
+  return attachChildren(db, rows);
 }
 
 export async function loadScale(db: SQLiteDatabase, scaleId: number): Promise<GradeScale> {

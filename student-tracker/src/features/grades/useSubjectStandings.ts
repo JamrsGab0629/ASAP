@@ -1,7 +1,7 @@
 import { useFocusEffect } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useCallback, useState } from 'react';
-import { listAllComponents } from './gradeQueries';
+import { listAllPeriods } from './gradeQueries';
 import { standingsBySubject } from './standing';
 
 export function useSubjectStandings(): Map<number, number> {
@@ -10,7 +10,7 @@ export function useSubjectStandings(): Map<number, number> {
 
   useFocusEffect(
     useCallback(() => {
-    listAllComponents(db).then((all) => setStandings(standingsBySubject(all)));
+      listAllPeriods(db).then((all) => setStandings(standingsBySubject(all)));
     }, [db]),
   );
 

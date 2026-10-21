@@ -4,19 +4,19 @@ import { useTheme } from '@/theme';
 import type { GradeView } from '../gradeView';
 import type { GradeScale } from '../types';
 
-type Props = { view: GradeView; scale: GradeScale };
+type Props = { view: GradeView; scale: GradeScale; title?: string };
 
-export function StandingCard({ view, scale }: Props) {
+export function StandingCard({ view, scale, title = 'Current standing' }: Props) {
   const { colors } = useTheme();
   const { standing, entry, passing } = view;
 
   const summary = entry
     ? `equals ${entry.equivalent} on your scale${scale.passingGrade !== null ? ` · passing is ${scale.passingGrade.toFixed(2)}` : ''}`
-    : 'Add a scored assessment to see your standing';
+    : 'Add scores to see your standing';
 
   return (
     <View style={{ backgroundColor: colors.hero, borderRadius: radius.lg, padding: space.xl, gap: space.sm }}>
-      <Text style={{ fontFamily: fonts.medium, fontSize: 13, color: colors.onHeroMuted }}>Current standing</Text>
+      <Text style={{ fontFamily: fonts.medium, fontSize: 13, color: colors.onHeroMuted }}>{title}</Text>
       <Text style={{ fontFamily: fonts.serif, fontSize: 44, color: colors.onHero }}>
         {standing.percent === null ? '—' : `${standing.percent.toFixed(1)}%`}
       </Text>

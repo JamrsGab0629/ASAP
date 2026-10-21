@@ -1,14 +1,32 @@
 import type { SQLiteDatabase } from 'expo-sqlite';
-import type { ComponentPreset } from './presets';
-import type { ComponentDraft, ItemDraft } from './types';
+import type { Preset } from './presets';
+import type { ComponentDraft, ItemDraft, PeriodDraft } from './types';
 
-export async function addComponent(db: SQLiteDatabase, d: ComponentDraft): Promise<void> {
-  await db.runAsync(`INSERT INTO grade_components (subject_id, name, weight) VALUES (?, ?, ?)`, d.subjectId, d.name, d.weight);
+export async function addPeriod(db: SQLiteDatabase, d: PeriodDraft): Promise<void> {
+  await db.runAsync(`INSERT INTO grade_periods (subject_id, name, weight) VALUES (?, ?, ?)`, d.subjectId, d.name, d.weight);
 }
 
-export async function addComponentsFromPreset(db: SQLiteDatabase, subjectId: number, preset: ComponentPreset): Promise<void> {
+export async function addPeriodsFromPreset(db: SQLiteDatabase, subjectId: number, preset: Preset): Promise<void> {
   await db.withTransactionAsync(async () => {
-    for (const part of preset.parts) await addComponent(db, { subjectId, name: part.name, weight: part.weight });
+    for (const part of preset.parts) await addPeriod(db, { subjectId, name: part.name, weight: part.weight });
+  });
+}
+
+export async function updatePeriod(db: SQLiteDatabase, id: number, d: PeriodDraft): Promise<void> {
+  await db.runAsync(`UPDATE grade_periods SET name = ?, weight = ? WHERE id = ?`, d.name, d.weight, id);
+}
+
+export async function deletePeriod(db: SQLiteDatabase, id: number): Promise<void> {
+  await db.runAsync(`DELETE FROM grade_periods WHERE id = ?`, id);
+}
+
+export async function addComponent(db: SQLiteDatabase, d: ComponentDraft): Promise<void> {
+  await db.runAsync(`INSERT INTO grade_components (period_id, name, weight) VALUES (?, ?, ?)`, d.periodId, d.name, d.weight);
+}
+
+export async function addComponentsFromPreset(db: SQLiteDatabase, periodId: number, preset: Preset): Promise<void> {
+  await db.withTransactionAsync(async () => {
+    for (const part of preset.parts) await addComponent(db, { periodId, name: part.name, weight: part.weight });
   });
 }
 
