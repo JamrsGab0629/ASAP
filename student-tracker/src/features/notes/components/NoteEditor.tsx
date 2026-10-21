@@ -1,0 +1,65 @@
+import { useRouter } from 'expo-router';
+import { ChevronLeft, Star, Trash2 } from 'lucide-react-native';
+import { Pressable, ScrollView, TextInput, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SubjectChips } from '@/components/SubjectChips';
+import { fonts, space } from '@/constants/theme';
+import { useSubjectOptions } from '@/hooks/useSubjectOptions';
+import { useTheme } from '@/theme';
+import type { Note } from '../types';
+import { useNoteEditor } from '../useNoteEditor';
+
+type Props = { note: Note; autoFocus: boolean };
+
+export function NoteEditor({ note, autoFocus }: Props) {
+  const { colors } = useTheme();
+  const insets = useSafeAreaInsets();
+  const router = useRouter();
+  const subjects = useSubjectOptions();
+  const editor = useNoteEditor(note);
+
+  return (
+    <View style={{ flex: 1, backgroundColor: colors.bg }}>
+      <View
+        style={{
+          flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+          paddingHorizontal: space.lg, paddingTop: insets.top + space.sm, paddingBottom: space.sm,
+        }}
+      >
+        <Pressable onPress={() => router.back()} accessibilityLabel="Back" hitSlop={10}>
+          <ChevronLeft size={26} color={colors.text} />
+        </Pressable>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.xl }}>
+          <Pressable onPress={editor.toggleStar} accessibilityLabel="Mark for review" hitSlop={10}>
+            <Star size={22} color={editor.starred ? colors.primary : colors.textMuted} fill={editor.starred ? colors.primary : 'transparent'} />
+          </Pressable>
+          <Pressable onPress={editor.remove} accessibilityLabel="Delete note" hitSlop={10}>
+            <Trash2 size={22} color={colors.textMuted} />
+          </Pressable>
+        </View>
+      </View>
+
+      <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ padding: space.xl, paddingTop: space.md, gap: space.lg }}>
+        <SubjectChips subjects={subjects} selectedId={editor.subjectId} onSelect={editor.changeSubject} />
+        <TextInput
+          value={editor.title}
+          onChangeText={editor.setTitle}
+          placeholder="Title (optional)"
+          placeholderTextColor={colors.textMuted}
+          style={{ fontFamily: fonts.serif, fontSize: 26, color: colors.text, padding: 0 }}
+        />
+        <TextInput
+          value={editor.body}
+          onChangeText={editor.setBody}
+          placeholder="Start typing. Add #tags anywhere."
+          placeholderTextColor={colors.textMuted}
+          autoFocus={autoFocus}
+          multiline
+          scrollEnabled={false}
+          textAlignVertical="top"
+          style={{ fontFamily: fonts.regular, fontSize: 16, lineHeight: 24, color: colors.text, minHeight: 320, padding: 0 }}
+        />
+      </ScrollView>
+    </View>
+  );
+}

@@ -6,7 +6,7 @@ export const notesTile: TileProvider = {
   id: 'notes',
   label: 'Notes',
   icon: FileText,
-  href: null,
+  href: '/notes',
   async load(db) {
     const row = await db.getFirstAsync<{ total: number; flagged: number }>(
       'SELECT COUNT(*) AS total, COALESCE(SUM(review_flag), 0) AS flagged FROM notes'
