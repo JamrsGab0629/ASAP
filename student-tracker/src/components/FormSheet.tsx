@@ -4,10 +4,17 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { fonts, radius, space } from '@/constants/theme';
 import { useTheme } from '@/theme';
 
-type Props = { title: string; onClose: () => void; onSave: () => void; children: ReactNode };
+type Props = {
+  title: string;
+  onClose: () => void;
+  onSave: () => void;
+  saveLabel?: string;
+  saveDisabled?: boolean;
+  children: ReactNode;
+};
 
 /** Full-screen modal with a title, Cancel and Save. The fields go inside. */
-export function FormSheet({ title, onClose, onSave, children }: Props) {
+export function FormSheet({ title, onClose, onSave, saveLabel = 'Save', saveDisabled = false, children }: Props) {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   return (
@@ -22,9 +29,9 @@ export function FormSheet({ title, onClose, onSave, children }: Props) {
             style={{ flex: 1, padding: space.lg, borderRadius: radius.md, borderWidth: 1, borderColor: colors.border, alignItems: 'center' }}>
             <Text style={{ fontFamily: fonts.semibold, color: colors.text }}>Cancel</Text>
           </Pressable>
-          <Pressable onPress={onSave}
-            style={{ flex: 1, padding: space.lg, borderRadius: radius.md, backgroundColor: colors.primary, alignItems: 'center' }}>
-            <Text style={{ fontFamily: fonts.semibold, color: colors.onPrimary }}>Save</Text>
+          <Pressable onPress={onSave} disabled={saveDisabled}
+            style={{ flex: 1, padding: space.lg, borderRadius: radius.md, backgroundColor: colors.primary, alignItems: 'center', opacity: saveDisabled ? 0.4 : 1 }}>
+            <Text style={{ fontFamily: fonts.semibold, color: colors.onPrimary }}>{saveLabel}</Text>
           </Pressable>
         </View>
       </View>

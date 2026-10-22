@@ -1,4 +1,4 @@
-import { Star } from 'lucide-react-native';
+import { Paperclip, Star } from 'lucide-react-native';
 import { Pressable, Text, View } from 'react-native';
 import { fonts, radius, space } from '@/constants/theme';
 import { useTheme } from '@/theme';
@@ -31,6 +31,7 @@ export function NoteCard({ note, today, onPress, onToggleReview }: Props) {
           <Text numberOfLines={1} style={{ fontFamily: fonts.regular, fontSize: 12, color: colors.textMuted, flexShrink: 1 }}>
             {note.subjectName} · {relativeDay(note.updatedAt, today)}
           </Text>
+          {note.filePath && <Paperclip size={12} color={colors.textMuted} />}
         </View>
         <Pressable hitSlop={10} onPress={() => onToggleReview(note)} accessibilityLabel="Mark for review">
           <Star size={18} color={note.reviewFlag ? colors.primary : colors.textMuted} fill={note.reviewFlag ? colors.primary : 'transparent'} />

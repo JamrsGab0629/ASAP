@@ -8,6 +8,7 @@ import { useSubjectOptions } from '@/hooks/useSubjectOptions';
 import { useTheme } from '@/theme';
 import type { Note } from '../types';
 import { useNoteEditor } from '../useNoteEditor';
+import { AttachmentBar } from './AttachmentBar';
 
 type Props = { note: Note; autoFocus: boolean };
 
@@ -41,6 +42,7 @@ export function NoteEditor({ note, autoFocus }: Props) {
 
       <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ padding: space.xl, paddingTop: space.md, gap: space.lg }}>
         <SubjectChips subjects={subjects} selectedId={editor.subjectId} onSelect={editor.changeSubject} />
+        {note.filePath && <AttachmentBar filePath={note.filePath} />}
         <TextInput
           value={editor.title}
           onChangeText={editor.setTitle}

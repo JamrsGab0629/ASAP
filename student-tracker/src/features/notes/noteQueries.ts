@@ -1,16 +1,17 @@
 import type { SQLiteDatabase } from 'expo-sqlite';
 import type { Note, NoteFilters, NoteListItem } from './types';
 
-type Row = Omit<Note, 'reviewFlag'> & { reviewFlag: number; subjectName: string; subjectColor: string };
+type NoteRow = Omit<Note, 'reviewFlag'> & { reviewFlag: number };
+type ListRow = NoteRow & { subjectName: string; subjectColor: string };
 
 const escapeLike = (text: string) => text.replace(/[\\%_]/g, (c) => `\\${c}`);
 
 const COLUMNS = `n.id, n.subject_id AS subjectId, n.title, COALESCE(n.body, '') AS body,
-  COALESCE(n.tags, '') AS tags, n.review_flag AS reviewFlag,
+  COALESCE(n.tags, '') AS tags, n.review_flag AS reviewFlag, n.file_path AS filePath,
   COALESCE(n.updated_at, n.created_at) AS updatedAt`;
 
 export async function listNotes(db: SQLiteDatabase, filters: NoteFilters): Promise<NoteListItem[]> {
-  const where: string[] = [`n.type = 'text'`];
+  const where: string[] = [`n.type IN ('text', 'file')`];
   const params: (string | number)[] = [];
 
   if (filters.subjectId !== null) {
@@ -26,7 +27,7 @@ export async function listNotes(db: SQLiteDatabase, filters: NoteFilters): Promi
     params.push(like, like, like);
   }
 
-  const rows = await db.getAllAsync<Row>(
+  const rows = await db.getAllAsync<ListRow>(
     `SELECT ${COLUMNS}, s.name AS subjectName, s.color AS subjectColor
      FROM notes n JOIN subjects s ON s.id = n.subject_id
      WHERE ${where.join(' AND ')}
@@ -37,9 +38,6 @@ export async function listNotes(db: SQLiteDatabase, filters: NoteFilters): Promi
 }
 
 export async function getNote(db: SQLiteDatabase, id: number): Promise<Note | null> {
-  const row = await db.getFirstAsync<Omit<Note, 'reviewFlag'> & { reviewFlag: number }>(
-    `SELECT ${COLUMNS} FROM notes n WHERE n.id = ?`,
-    id,
-  );
+  const row = await db.getFirstAsync<NoteRow>(`SELECT ${COLUMNS} FROM notes n WHERE n.id = ?`, id);
   return row ? { ...row, reviewFlag: row.reviewFlag === 1 } : null;
 }

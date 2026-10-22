@@ -6,6 +6,7 @@ export type Note = {
   tags: string; // comma-separated, lowercase, no '#'
   reviewFlag: boolean;
   updatedAt: string; // 'YYYY-MM-DD HH:MM:SS' local time
+  filePath: string | null; // stored copy of an imported file, relative to the app's documents folder
 };
 
 export type NoteListItem = Note & { subjectName: string; subjectColor: string };
