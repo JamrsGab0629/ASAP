@@ -31,10 +31,14 @@ export async function analyzeFile(file: PickedFile): Promise<FileAnalysis> {
       message: `${extension || 'This kind of'} file can't be imported. Supported: ${supportedExtensions().join(', ')}.`,
     };
   }
-  if (file.size && file.size > MAX_BYTES) {
-    return { status: 'failed', name: file.name, message: 'Too large to read on the phone (over 40 MB).' };
+    const limit = extractor.maxBytes ?? MAX_BYTES;
+  if (file.size && file.size > limit) {
+    return {
+      status: 'failed',
+      name: file.name,
+      message: `Too large to read on the phone (over ${Math.round(limit / 1024 / 1024)} MB).`,
+    };
   }
-
   try {
     const result = await extractor.extract({ uri: file.uri, name: file.name, extension });
     const body = composeBody(result.sections);

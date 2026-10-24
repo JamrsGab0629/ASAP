@@ -14,5 +14,7 @@ export type Source = { uri: string; name: string; extension: string };
 /** To support a new file type, write one of these and add it to the list in extractors.ts. */
 export interface Extractor {
   extensions: string[];
+  /** Largest file this extractor can handle, in bytes. Falls back to the importer's default. */
+  maxBytes?: number;
   extract(source: Source): Promise<ExtractionResult>;
 }

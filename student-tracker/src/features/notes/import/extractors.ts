@@ -1,13 +1,15 @@
 import JSZip from 'jszip';
-import { readBase64, readText } from './fileAccess';
 import { normalizeText, removeRepeatedLines, unwrapLines } from './cleanText';
+import { readBase64, readText } from './fileAccess';
+import { cleanPdfPages } from './pdf/cleanPdfText';
+import { extractPdfPages } from './pdf/pdfEngine';
 import { parsePptx, type PptxFiles } from './pptxParser';
 import type { ExtractionResult, Extractor, Source } from './types';
 
 const textExtractor: Extractor = {
   extensions: ['.txt', '.md', '.markdown'],
   async extract({ uri, extension }: Source): Promise<ExtractionResult> {
-   const cleaned = normalizeText(await readText(uri));  
+    const cleaned = normalizeText(await readText(uri));
     const text = extension === '.txt' ? unwrapLines(cleaned) : cleaned; // Markdown keeps its own line breaks
     return { sections: text ? [{ label: null, text }] : [] };
   },
@@ -16,11 +18,10 @@ const textExtractor: Extractor = {
 const PPTX_ENTRIES =
   /^ppt\/(presentation\.xml|_rels\/presentation\.xml\.rels|slides\/slide\d+\.xml|slides\/_rels\/slide\d+\.xml\.rels|notesSlides\/notesSlide\d+\.xml)$/;
 
-  
 const pptxExtractor: Extractor = {
   extensions: ['.pptx'],
   async extract({ uri }: Source): Promise<ExtractionResult> {
-  const zip = await JSZip.loadAsync(await readBase64(uri), { base64: true });
+    const zip = await JSZip.loadAsync(await readBase64(uri), { base64: true });
     const files: PptxFiles = {};
     await Promise.all(
       Object.keys(zip.files)
@@ -38,11 +39,19 @@ const pptxExtractor: Extractor = {
   },
 };
 
-/** PDFs are stored as attachments for now. Swap this for a real text extractor later. */
+const MAX_PDF_BYTES = 25 * 1024 * 1024;
+
 const pdfExtractor: Extractor = {
   extensions: ['.pdf'],
-  async extract(): Promise<ExtractionResult> {
-    return { sections: [], unit: 'page', note: 'Saved as a file. Reading text out of PDFs comes later.' };
+  maxBytes: MAX_PDF_BYTES,
+  async extract({ uri }: Source): Promise<ExtractionResult> {
+    const pages = await extractPdfPages(await readBase64(uri));
+    const sections = removeRepeatedLines(cleanPdfPages(pages));
+    return {
+      sections,
+      unit: 'page',
+      note: sections.length === 0 ? 'No text found. This PDF may be scanned pictures. The file is saved so you can open it.' : undefined,
+    };
   },
 };
 

@@ -34,6 +34,8 @@ export function unwrapLines(text: string): string {
   }
   return result.join('\n');
 }
+/** A line without a trailing page number, so "Course name 3" and "Course name 4" count as the same line. */
+const repeatKey = (line: string) => line.trim().replace(/\s+\d{1,3}$/, '');
 
 /** Drops plain lines that repeat on most slides or pages (footers, course names). */
 export function removeRepeatedLines(sections: Section[]): Section[] {
@@ -42,12 +44,12 @@ export function removeRepeatedLines(sections: Section[]): Section[] {
 
   const counts = new Map<string, number>();
   for (const section of sections) {
-    for (const line of new Set(section.text.split('\n').map((l) => l.trim()))) {
-      if (line) counts.set(line, (counts.get(line) ?? 0) + 1);
+    for (const key of new Set(section.text.split('\n').map(repeatKey))) {
+      if (key) counts.set(key, (counts.get(key) ?? 0) + 1);
     }
   }
   const isRepeated = (line: string) =>
-    !line.trimStart().startsWith('- ') && line.trim().length < 80 && (counts.get(line.trim()) ?? 0) >= threshold;
+    !line.trimStart().startsWith('- ') && line.trim().length < 80 && (counts.get(repeatKey(line)) ?? 0) >= threshold;
 
   return sections.map((s) => ({ ...s, text: s.text.split('\n').filter((l) => !isRepeated(l)).join('\n').trim() }));
 }

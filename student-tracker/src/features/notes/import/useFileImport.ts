@@ -16,10 +16,12 @@ export function useFileImport(subjects: SubjectOption[], filterSubjectId: number
   const [phase, setPhase] = useState<ImportPhase>('idle');
   const [items, setItems] = useState<FileAnalysis[]>([]);
   const [subjectId, setSubjectId] = useState<number | null>(null);
+  const [needsPdf, setNeedsPdf] = useState(false);
 
   const reset = () => {
     setPhase('idle');
     setItems([]);
+    setNeedsPdf(false);
   };
 
   const start = async () => {
@@ -28,6 +30,7 @@ export function useFileImport(subjects: SubjectOption[], filterSubjectId: number
       const picked = await pickFiles();
       if (picked.length === 0) return;
 
+      setNeedsPdf(picked.some((f) => /\.pdf$/i.test(f.name))); // the PDF reader only starts when a PDF was picked
       setPhase('reading');
       const analyzed: FileAnalysis[] = [];
       for (const file of picked) analyzed.push(await analyzeFile(file)); // one at a time to keep memory low
@@ -50,5 +53,5 @@ export function useFileImport(subjects: SubjectOption[], filterSubjectId: number
     if (failed > 0) Alert.alert('Some files were not saved', `${saved} saved, ${failed} failed.`);
   };
 
-  return { phase, items, subjectId, setSubjectId, start, confirm, cancel: reset };
+  return { phase, items, subjectId, setSubjectId, needsPdf, start, confirm, cancel: reset };
 }

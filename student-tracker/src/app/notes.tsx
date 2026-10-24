@@ -18,6 +18,9 @@ import { useDebounced } from '@/hooks/useDebounced';
 import { useSubjectOptions } from '@/hooks/useSubjectOptions';
 import { useTheme } from '@/theme';
 import { Images, Pencil, Plus, Upload } from 'lucide-react-native';
+import { PdfEngineHost } from '@/features/notes/import/pdf/PdfEngineHost';
+
+
 export default function NotesScreen() {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
@@ -102,7 +105,8 @@ export default function NotesScreen() {
       />
 
       <NewNoteMenu visible={menuOpen} options={menuOptions} onClose={() => setMenuOpen(false)} />
-
+          {fileImport.needsPdf && <PdfEngineHost />}
+          
       {fileImport.phase !== 'idle' && (
         <ImportSheet
           phase={fileImport.phase}
