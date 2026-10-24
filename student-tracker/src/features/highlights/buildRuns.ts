@@ -1,4 +1,4 @@
-import { splitSentences } from './splitSentences';
+import { splitSentences } from '../../lib/splitSentences';
 import type { Highlight, Run } from './types';
 
 type Range = { start: number; end: number; id: number };
