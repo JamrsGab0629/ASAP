@@ -2,14 +2,15 @@ import { Paperclip } from 'lucide-react-native';
 import { Alert, Pressable, Text, View } from 'react-native';
 import { fonts, radius, space } from '@/constants/theme';
 import { useTheme } from '@/theme';
-import { resolveStoredFile, storedDisplayName } from '../noteFiles';
 
+import { storedDisplayName } from '../noteFiles';
+import { openStoredFile } from '../openFile';
 export function AttachmentBar({ filePath }: { filePath: string }) {
   const { colors } = useTheme();
 
-  const open = async () => {
+   const open = async () => {
     try {
-      await resolveStoredFile(filePath).preview();
+      await openStoredFile(filePath);
     } catch {
       Alert.alert("Couldn't open the file", 'Install an app that can open this kind of file, such as a PDF or PowerPoint viewer.');
     }

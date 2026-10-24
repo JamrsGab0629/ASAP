@@ -2,7 +2,7 @@ import type { SQLiteDatabase } from 'expo-sqlite';
 import { deleteStoredFile } from './noteFiles';
 import { extractTags } from './tags';
 import type { NoteDraft } from './types';
-
+import { removeNoteHighlights } from '@/features/highlights/highlightMutations';
 const NOW = `datetime('now', 'localtime')`;
 
 export async function createNote(db: SQLiteDatabase, subjectId: number): Promise<number> {
@@ -39,6 +39,7 @@ export async function saveReviewFlag(db: SQLiteDatabase, id: number, flag: boole
 
 export async function deleteNote(db: SQLiteDatabase, id: number): Promise<void> {
   const row = await db.getFirstAsync<{ file_path: string | null }>(`SELECT file_path FROM notes WHERE id = ?`, id);
+  await removeNoteHighlights(db, id);
   await db.runAsync(`DELETE FROM notes WHERE id = ?`, id);
   if (row?.file_path) deleteStoredFile(row.file_path);
 }
