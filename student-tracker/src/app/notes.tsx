@@ -1,6 +1,6 @@
 import { Link, useRouter } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
-import { Pencil, Plus, Upload } from 'lucide-react-native';
+
 import { useState } from 'react';
 import { FlatList, Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -17,7 +17,7 @@ import { useNotes } from '@/features/notes/useNotes';
 import { useDebounced } from '@/hooks/useDebounced';
 import { useSubjectOptions } from '@/hooks/useSubjectOptions';
 import { useTheme } from '@/theme';
-
+import { Images, Pencil, Plus, Upload } from 'lucide-react-native';
 export default function NotesScreen() {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
@@ -40,6 +40,7 @@ export default function NotesScreen() {
   const menuOptions: MenuOption[] = [
     { key: 'write', label: 'Write a note', hint: 'Type it out. Add #tags anywhere.', icon: Pencil, onPress: createNote },
     { key: 'import', label: 'Import files', hint: 'PowerPoint, text or PDF lectures', icon: Upload, onPress: fileImport.start },
+    { key: 'photos', label: 'Lecture photos', hint: 'Albums by subject and lesson', icon: Images, onPress: () => router.push('/gallery') },
   ];
 
   const toggleReview = async (note: NoteListItem) => {
