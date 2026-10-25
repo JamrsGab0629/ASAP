@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { ChevronLeft, Plus, ScanSearch } from 'lucide-react-native';
+import { ChevronLeft,ListChecks, Plus, ScanSearch } from 'lucide-react-native';
 import { FlatList, Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { fonts, radius, space } from '@/constants/theme';
@@ -67,6 +67,17 @@ export default function FlashcardsScreen() {
             >
               <ScanSearch size={18} color={colors.primary} />
               <Text style={{ fontFamily: fonts.semibold, fontSize: 16, color: colors.primary }}>Scan a note for cards</Text>
+            </Pressable>
+                        <Pressable
+              onPress={() => router.push('/quiz')}
+              accessibilityLabel="Take a quiz"
+              style={{
+                flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: space.sm, padding: space.lg,
+                borderRadius: radius.lg, borderWidth: 1, borderColor: colors.primary,
+              }}
+            >
+              <ListChecks size={18} color={colors.primary} />
+              <Text style={{ fontFamily: fonts.semibold, fontSize: 16, color: colors.primary }}>Take a quiz</Text>
             </Pressable>
           </View>
         }
