@@ -17,7 +17,7 @@ import { useNotes } from '@/features/notes/useNotes';
 import { useDebounced } from '@/hooks/useDebounced';
 import { useSubjectOptions } from '@/hooks/useSubjectOptions';
 import { useTheme } from '@/theme';
-import { Images, Pencil, Plus, Upload } from 'lucide-react-native';
+import { Layers,Images, Pencil, Plus, Upload } from 'lucide-react-native';
 import { PdfEngineHost } from '@/features/notes/import/pdf/PdfEngineHost';
 
 
@@ -44,6 +44,7 @@ export default function NotesScreen() {
     { key: 'write', label: 'Write a note', hint: 'Type it out. Add #tags anywhere.', icon: Pencil, onPress: createNote },
     { key: 'import', label: 'Import files', hint: 'PowerPoint, text or PDF lectures', icon: Upload, onPress: fileImport.start },
     { key: 'photos', label: 'Lecture photos', hint: 'Albums by subject and lesson', icon: Images, onPress: () => router.push('/gallery') },
+    { key: 'flashcards', label: 'Flashcards', hint: 'Study with spaced repetition', icon: Layers, onPress: () => router.push('/flashcards') }
   ];
 
   const toggleReview = async (note: NoteListItem) => {

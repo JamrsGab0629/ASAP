@@ -6,7 +6,7 @@ export const flashcardsTile: TileProvider = {
   id: 'flashcards',
   label: 'Flashcards',
   icon: Layers,
-  href: null,
+  href: '/flashcards',
   async load(db, today) {
     const row = await db.getFirstAsync<{ n: number }>(
       'SELECT COUNT(*) AS n FROM cards WHERE next_review IS NULL OR substr(next_review, 1, 10) <= ?',
