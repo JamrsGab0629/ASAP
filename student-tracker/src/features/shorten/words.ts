@@ -17,3 +17,14 @@ export const contentWords = (text: string): string[] =>
   wordsOf(text).filter((w) => w.length > 2 && !STOP_WORDS.has(w) && !/^\d+$/.test(w));
 
 export const countWords = (text: string) => (text.trim() ? text.trim().split(/\s+/).length : 0);
+/** Every word in the text with where it starts, keeping its original capitals. */
+export function wordMatches(text: string): { word: string; index: number }[] {
+  const found: { word: string; index: number }[] = [];
+  const pattern = new RegExp(WORD.source, 'gi');
+  let match = pattern.exec(text);
+  while (match) {
+    found.push({ word: match[0], index: match.index });
+    match = pattern.exec(text);
+  }
+  return found;
+}

@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { ChevronLeft, Plus } from 'lucide-react-native';
+import { ChevronLeft, Plus, ScanSearch } from 'lucide-react-native';
 import { FlatList, Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { fonts, radius, space } from '@/constants/theme';
@@ -55,6 +55,18 @@ export default function FlashcardsScreen() {
               <Text style={{ fontFamily: fonts.semibold, fontSize: 17, color: colors.onPrimary }}>
                 {studyAll === 0 ? 'All caught up' : `Study all · ${studyAll} card${studyAll === 1 ? '' : 's'}`}
               </Text>
+            </Pressable>
+
+            <Pressable
+              onPress={() => router.push('/scan')}
+              accessibilityLabel="Scan a note for flashcards"
+              style={{
+                flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: space.sm, padding: space.lg,
+                borderRadius: radius.lg, borderWidth: 1, borderColor: colors.primary,
+              }}
+            >
+              <ScanSearch size={18} color={colors.primary} />
+              <Text style={{ fontFamily: fonts.semibold, fontSize: 16, color: colors.primary }}>Scan a note for cards</Text>
             </Pressable>
           </View>
         }

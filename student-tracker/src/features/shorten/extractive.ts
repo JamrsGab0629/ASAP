@@ -1,12 +1,12 @@
 import { contentWords } from './words';
 import type { Shortener, Unit } from './types';
 
-const BOILERPLATE = /all rights reserved|©|\(c\)\s*\d{4}|unauthorized use|for .{0,40}use only|strictly prohibited/i;
+export const BOILERPLATE = /all rights reserved|©|\(c\)\s*\d{4}|unauthorized use|for .{0,40}use only|strictly prohibited/i;
 const DEFINITION_CUE = /\b(?:is|are|means|refers to|defined as|consists of|called|known as)\b/i;
 const TERM_COLON = /^[-\s]*[^:\n]{2,40}:\s+\S/;
 
 /** How much each word matters: how often it appears in the note, relative to the most common word. */
-function wordWeights(units: Unit[]): Map<string, number> {
+export function wordWeights(units: Unit[]): Map<string, number> {
   const counts = new Map<string, number>();
   for (const unit of units) {
     if (unit.heading) continue;
@@ -16,7 +16,7 @@ function wordWeights(units: Unit[]): Map<string, number> {
   return new Map([...counts].map(([word, count]) => [word, count / max]));
 }
 
-function scoreUnit(unit: Unit, weights: Map<string, number>, isFirstInSection: boolean): number {
+export function scoreUnit(unit: Unit, weights: Map<string, number>, isFirstInSection: boolean): number {
   const words = new Set(contentWords(unit.text));
   if (words.size === 0) return 0;
 
