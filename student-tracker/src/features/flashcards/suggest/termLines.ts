@@ -1,5 +1,8 @@
 import { stripBullet, wordCount, capitalizeFirst } from './text';
 import type { Generator, RawSuggestion } from './types';
+import { isVagueFront } from '../cardQuality';
+
+
 
 const HEADING = /^(?:Slide|Page) \d+/;
 const TERM_LINE = /^([^:\n]{2,60}?):\s+(\S.*)$/;
@@ -22,7 +25,7 @@ export const termGenerator: Generator = {
       const term = match[1].trim();
       const definition = match[2].trim();
 
-      if (NOT_TERMS.has(term.toLowerCase()) || wordCount(term) > 8 || /^\d+$/.test(term)) return;
+      if (NOT_TERMS.has(term.toLowerCase()) || isVagueFront(term) || wordCount(term) > 8 || /^\d+$/.test(term)) return;
       if (wordCount(definition) < 3) return;
       found.push({ kind: 'term', front: term, back: capitalizeFirst(definition), source: text, position: line });
     });

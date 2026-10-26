@@ -49,6 +49,7 @@ export default function QuizScreen() {
             max={quiz.max}
             hasCards={quiz.hasCards}
             onStart={quiz.start}
+            skipped={quiz.skipped}
           />
         )}
 

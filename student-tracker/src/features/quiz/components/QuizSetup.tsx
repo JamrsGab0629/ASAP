@@ -18,10 +18,11 @@ type Props = {
   onToggleType: (type: QuestionType) => void;
   max: number;
   hasCards: boolean;
+  skipped: number;
   onStart: () => void;
 };
 
-export function QuizSetup({ subjects, subjectId, onSubject, count, onCount, types, available, onToggleType, max, hasCards, onStart }: Props) {
+export function QuizSetup({ subjects, subjectId, onSubject, count, onCount, types, available, onToggleType, max, hasCards, skipped, onStart }: Props) {
   const { colors } = useTheme();
   const label = { fontFamily: fonts.medium, fontSize: 13, color: colors.textMuted } as const;
   const canStart = max > 0;
@@ -73,6 +74,12 @@ export function QuizSetup({ subjects, subjectId, onSubject, count, onCount, type
             ? `${Math.min(count, max)} question${Math.min(count, max) === 1 ? '' : 's'} will be made from your cards.`
             : 'These question types need more cards. Add cards or pick other types.'}
       </Text>
+
+      {skipped > 0 && (
+        <Text style={{ fontFamily: fonts.regular, fontSize: 13, color: colors.textMuted }}>
+          {skipped} card{skipped === 1 ? ' was' : 's were'} left out because the front is a label like "Tip" or "Note", not a question. Edit them to include them.
+        </Text>
+      )}
 
       <Pressable
         onPress={onStart}

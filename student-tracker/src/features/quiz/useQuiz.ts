@@ -5,6 +5,7 @@ import { gradeAnswer, KIND_LIST } from './kinds';
 import { loadQuizCards } from './quizQueries';
 import { makeCardsDue, saveQuizResult } from './quizMutations';
 import type { Answer, Grade, Question, QuestionType, QuizCard } from './types';
+import { isVagueFront } from '@/features/flashcards/cardQuality';
 
 export type Phase = 'setup' | 'playing' | 'results';
 export type Outcome = { question: Question; grade: Grade };
@@ -16,6 +17,7 @@ export function useQuiz(initialSubjectId: number | null) {
   const db = useSQLiteContext();
   const [subjectId, setSubjectId] = useState<number | null>(initialSubjectId);
   const [cards, setCards] = useState<QuizCard[]>([]);
+    const [skipped, setSkipped] = useState(0); // cards left out because their front is a label, not a question
   const [count, setCount] = useState(10);
   const [types, setTypes] = useState<QuestionType[]>(ALL_TYPES);
 
@@ -29,7 +31,10 @@ export function useQuiz(initialSubjectId: number | null) {
   useEffect(() => {
     let cancelled = false;
     loadQuizCards(db, subjectId).then((loaded) => {
-      if (!cancelled) setCards(loaded);
+           if (cancelled) return;
+      const ready = loaded.filter((card) => !isVagueFront(card.front));
+      setCards(ready);
+      setSkipped(loaded.length - ready.length);
     });
     return () => {
       cancelled = true;
@@ -86,7 +91,7 @@ export function useQuiz(initialSubjectId: number | null) {
   const backToSetup = () => setPhase('setup');
 
   return {
-    subjectId, setSubjectId, count, setCount, types, toggleType, available, max, hasCards: cards.length > 0,
+    subjectId, setSubjectId, count, setCount, types, toggleType, available, max,hasCards: cards.length > 0, skipped,
     phase, questions, index, current, outcomes, studiedMissed,
     start, submit, markCorrect, next, studyMissed, backToSetup,
   };

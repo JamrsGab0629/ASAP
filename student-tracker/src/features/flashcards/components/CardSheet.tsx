@@ -7,6 +7,7 @@ import type { SubjectOption } from '@/lib/subjectOptions';
 import { useTheme } from '@/theme';
 import type { Card, CardDraft } from '../types';
 import { checkCard } from '../validateCard';
+import { ImproveFrontButton } from './ImproveFrontButton';
 
 type Props = {
   card: Card | null; // null = a new card
@@ -52,7 +53,7 @@ export function CardSheet({ card, initialSubjectId, subjects, onClose, onSave, o
 
         <Text style={{ fontFamily: fonts.medium, fontSize: 13, color: colors.textMuted }}>Back (answer)</Text>
         <TextInput value={back} onChangeText={setBack} multiline textAlignVertical="top" placeholder="A finite sequence of steps that solves a problem." placeholderTextColor={colors.textMuted} style={input} />
-
+        <ImproveFrontButton front={front} back={back} noteId={card?.noteId ?? null} onUse={setFront} />
         {error && <Text style={{ fontFamily: fonts.medium, fontSize: 14, color: colors.danger }}>{error}</Text>}
 
         {card && (

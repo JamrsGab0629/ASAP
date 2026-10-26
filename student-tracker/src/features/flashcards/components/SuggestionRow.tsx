@@ -16,7 +16,11 @@ type Props = { suggestion: Suggestion; picked: boolean; onToggle: () => void; on
 
 export function SuggestionRow({ suggestion, picked, onToggle, onEdit }: Props) {
   const { colors } = useTheme();
-  const label = suggestion.highlighted && suggestion.kind !== 'highlight' ? `${KIND_LABEL[suggestion.kind]} · highlighted` : KIND_LABEL[suggestion.kind];
+   const label = suggestion.rewritten
+    ? 'Question (AI)'
+    : suggestion.highlighted && suggestion.kind !== 'highlight'
+      ? `${KIND_LABEL[suggestion.kind]} · highlighted`
+      : KIND_LABEL[suggestion.kind];
 
   return (
     <Pressable

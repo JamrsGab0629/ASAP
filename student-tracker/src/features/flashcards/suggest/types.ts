@@ -3,6 +3,7 @@ import type { Unit } from '@/features/shorten/types';
 export type SuggestionKind = 'term' | 'definition' | 'list' | 'highlight' | 'blank';
 
 /** A card the app thinks might be worth making. */
+/** A card the app thinks might be worth making. */
 export type Suggestion = {
   id: string;
   kind: SuggestionKind;
@@ -13,9 +14,11 @@ export type Suggestion = {
   /** The student highlighted this part of the note */
   highlighted: boolean;
   position: number;
+  /** The model rewrote this card's front as a question */
+  rewritten?: boolean;
 };
 
-export type RawSuggestion = Omit<Suggestion, 'id' | 'highlighted'>;
+export type RawSuggestion = Omit<Suggestion, 'id' | 'highlighted' | 'rewritten'>;
 
 export type Context = {
   body: string;

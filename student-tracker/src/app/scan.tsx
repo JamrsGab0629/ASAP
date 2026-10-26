@@ -9,6 +9,7 @@ import { NotePicker } from '@/features/flashcards/components/NotePicker';
 import { SuggestionRow } from '@/features/flashcards/components/SuggestionRow';
 import { useNoteScan } from '@/features/flashcards/useNoteScan';
 import { useTheme } from '@/theme';
+import { RewriteBar } from '@/features/flashcards/components/RewriteBar';
 
 function ScanResults({ noteId }: { noteId: number }) {
   const { colors } = useTheme();
@@ -47,6 +48,7 @@ function ScanResults({ noteId }: { noteId: number }) {
             <Text style={{ fontFamily: fonts.serif, fontSize: 28, color: colors.text }}>Make flashcards</Text>
             {scan.note && <Text numberOfLines={1} style={{ fontFamily: fonts.medium, fontSize: 14, color: colors.primary }}>{scan.note.title || 'Untitled'}</Text>}
             <Text style={{ fontFamily: fonts.regular, fontSize: 14, color: colors.textMuted }}>{summary}</Text>
+            <RewriteBar status={scan.rewrite} available={scan.canRewriteAny} onStart={scan.startRewrite} onCancel={scan.cancelRewrite} />
             {scan.cards.length > 0 && (
               <View style={{ flexDirection: 'row', gap: space.lg }}>
                 <Pressable onPress={() => scan.setAll(true)}><Text style={{ fontFamily: fonts.medium, color: colors.primary }}>Select all</Text></Pressable>
