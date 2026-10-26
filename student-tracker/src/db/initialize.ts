@@ -7,6 +7,8 @@ import { ensureGalleryTables } from '@/features/gallery/galleryTables';
 import { ensureHighlightTable } from '@/features/highlights/highlightTable';
 import {ensureFlashcardTables} from '@/features/flashcards/flashCardTables';
 import { ensureQuizTables } from '@/features/quiz/quizTables';
+import {ensureSettingsTable} from './settingsTable'
+
 export async function initializeDatabase(db: SQLiteDatabase) {
   await initDb(db);
   await ensureGradeTables(db);
@@ -16,4 +18,5 @@ export async function initializeDatabase(db: SQLiteDatabase) {
   await ensureHighlightTable(db);
   await ensureQuizTables(db);
   await ensureFlashcardTables(db);
+  await ensureSettingsTable(db);
 }

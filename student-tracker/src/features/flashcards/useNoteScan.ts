@@ -1,6 +1,7 @@
 import { useSQLiteContext } from 'expo-sqlite';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Alert } from 'react-native';
+import { useBooleanSetting } from '@/lib/useBooleanSetting';
 import { addCard } from './cardMutations';
 import { runSequentially } from './improve/batch';
 import { ensureModelReady } from './improve/ensureModel';
@@ -30,6 +31,8 @@ export function useNoteScan(noteId: number) {
   const [adding, setAdding] = useState(false);
   const [rewrite, setRewrite] = useState<RewriteStatus>({ kind: 'idle' });
   const cancelled = useRef(false);
+  const autoStarted = useRef(false);
+  const useAi = useBooleanSetting('scan_use_ai', false);
 
   useEffect(() => {
     let stale = false;
@@ -117,8 +120,26 @@ export function useNoteScan(noteId: number) {
     cancelled.current = true;
   };
 
+  /** With the switch on, the rewrite starts by itself, but only when the model is already on the phone. A download is never started without asking. */
+  useEffect(() => {
+    if (loading || !useAi.ready || !useAi.value || autoStarted.current || !canRewriteAny) return;
+    autoStarted.current = true;
+    isModelDownloaded().then((downloaded) => {
+      if (downloaded) runRewrite();
+    });
+  }, [loading, useAi.ready, useAi.value, canRewriteAny]);
+
+  const setUseAi = (on: boolean) => {
+    useAi.set(on);
+    if (!on || !canRewriteAny) return;
+    isModelDownloaded().then((downloaded) => {
+      if (!downloaded) startRewrite();
+    });
+  };
+
   return {
     note: result?.note ?? null, cards, loading, picked, adding, toggle, setAll, edit, addPicked,
     rewrite, canRewriteAny, startRewrite, cancelRewrite,
+    useAi: useAi.value, setUseAi,
   };
 }

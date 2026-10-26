@@ -64,7 +64,7 @@ export function ImproveFrontButton({ front, back, noteId, onUse }: Props) {
     <View style={{ gap: space.xs }}>
       {status.kind === 'failed' && <Text style={{ fontFamily: fonts.regular, fontSize: 13, color: colors.danger }}>{status.message}</Text>}
       <Pressable onPress={() => start({ front, back }, noteId)} disabled={disabled} style={{ opacity: disabled ? 0.4 : 1 }}>
-        <Text style={{ fontFamily: fonts.medium, fontSize: 14, color: colors.primary }}>Write a clearer front with the on-device model</Text>
+               <Text style={{ fontFamily: fonts.medium, fontSize: 14, color: colors.primary }}>{front.trim() ? 'Write a clearer front with AI' : 'Write the front with AI'}</Text>
       </Pressable>
     </View>
   );
