@@ -1,10 +1,13 @@
-import { contentWords } from '@/features/shorten/words';
+import { contentWords, related } from '@/features/shorten/words';
 import { isVagueFront } from '../cardQuality';
 
 const MIN_CHARS = 10;
 const MAX_CHARS = 160;
 /** A question about the topic reuses topic words. Copying almost the whole answer is what we block. */
 const MAX_ANSWER_OVERLAP = 0.8;
+/** Words in the question that are not in the note. A few are normal ("primary", "goal"). Many means the model made things up. */
+const MAX_NEW_WORDS = 2;
+const MIN_COVERED = 0.65;
 const QUESTION_WORDS =
   /^(?:(?:in|on|at|by|for|from|to|with|during|under|of|about)\s+)?(?:what|which|who|whom|whose|when|where|why|how|name|identify|define|describe|explain|state|list|give|is|are|does|do|can)\b/i;
 
@@ -20,9 +23,15 @@ export function cleanQuestion(raw: string, source: { front: string; back: string
   if (normalize(text) === normalize(source.front)) return null;
 
   // It must be about the note: share at least one real word with the text it was given.
-  const known = new Set(contentWords(`${source.context} ${source.back}`));
+  const known = new Set(contentWords(`${source.context} ${source.back} ${source.front}`));
   const shared = contentWords(text).filter((w) => known.has(w));
   if (shared.length === 0) return null;
+
+  // Most of what it asks about must come from the note, not from the model's imagination.
+  const asked = [...new Set(contentWords(text))];
+  const sourceWords = [...known];
+  const missing = asked.filter((w) => !sourceWords.some((k) => related(k, w)));
+  if (missing.length > MAX_NEW_WORDS && 1 - missing.length / asked.length < MIN_COVERED) return null;
 
   // It must not give the answer away by repeating most of it.
   const answerWords = contentWords(source.back);

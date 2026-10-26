@@ -1,4 +1,4 @@
-import { contentWords, countWords, wordsOf } from '../words';
+import { contentWords, countWords, related, wordsOf } from '../words';
 
 const MIN_WORDS = 8; // shorter sentences are already short
 const MAX_WORDS = 60; // longer ones are usually a pasted paragraph, and the small model loses track
@@ -17,14 +17,7 @@ export function canSimplify(sentence: string): boolean {
   return words >= MIN_WORDS && words <= MAX_WORDS;
 }
 
-const related = (a: string, b: string) => {
-  if (a === b) return true;
-  const short = Math.min(a.length, b.length);
-  if (short >= 3 && (a.startsWith(b) || b.startsWith(a))) return true; // use / used
-  let i = 0;
-  while (i < short && a[i] === b[i]) i++;
-  return i >= 5; // organize / organization
-};
+
 
 const numbersOf = (text: string) => new Set(text.match(NUMBER) ?? []);
 const sameSet = (a: Set<string>, b: Set<string>) => a.size === b.size && [...a].every((x) => b.has(x));

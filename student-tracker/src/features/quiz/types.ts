@@ -1,5 +1,5 @@
 /** The part of a flashcard the quiz needs. */
-export type QuizCard = { id: number; subjectId: number; front: string; back: string };
+export type QuizCard = { id: number; subjectId: number; noteId?: number | null; front: string; back: string };
 
 export type QuestionType = 'choice' | 'identify' | 'enumerate' | 'truefalse';
 

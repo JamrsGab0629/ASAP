@@ -1,11 +1,19 @@
 import { useSQLiteContext } from 'expo-sqlite';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Alert } from 'react-native';
 import { availability, buildQuiz, maxQuestions } from './buildQuiz';
+import { isBrokenCard } from '@/features/flashcards/cardQuality';
+import { ensureModelReady } from '@/features/flashcards/improve/ensureModel';
+import { MODEL } from '@/features/flashcards/improve/modelConfig';
+import { isModelDownloaded } from '@/features/flashcards/improve/modelFiles';
+import { useBooleanSetting } from '@/lib/useBooleanSetting';
+import { improveChoices } from './ai/improveChoices';
+import { llamaWriter } from './ai/llamaWriter';
+import type { PrepStatus, QuizAi } from './ai/status';
 import { gradeAnswer, KIND_LIST } from './kinds';
 import { loadQuizCards } from './quizQueries';
 import { makeCardsDue, saveQuizResult } from './quizMutations';
 import type { Answer, Grade, Question, QuestionType, QuizCard } from './types';
-import { isVagueFront } from '@/features/flashcards/cardQuality';
 
 export type Phase = 'setup' | 'playing' | 'results';
 export type Outcome = { question: Question; grade: Grade };
@@ -17,7 +25,7 @@ export function useQuiz(initialSubjectId: number | null) {
   const db = useSQLiteContext();
   const [subjectId, setSubjectId] = useState<number | null>(initialSubjectId);
   const [cards, setCards] = useState<QuizCard[]>([]);
-    const [skipped, setSkipped] = useState(0); // cards left out because their front is a label, not a question
+  const [skipped, setSkipped] = useState(0); // cards left out because their front is a label, not a question
   const [count, setCount] = useState(10);
   const [types, setTypes] = useState<QuestionType[]>(ALL_TYPES);
 
@@ -28,11 +36,15 @@ export function useQuiz(initialSubjectId: number | null) {
   const [current, setCurrent] = useState<Grade | null>(null); // the grade of the question on screen
   const [studiedMissed, setStudiedMissed] = useState(false);
 
+  const useAi = useBooleanSetting('quiz_use_ai', false);
+  const [prep, setPrep] = useState<PrepStatus>({ kind: 'idle' });
+  const stopped = useRef(false);
+
   useEffect(() => {
     let cancelled = false;
     loadQuizCards(db, subjectId).then((loaded) => {
-           if (cancelled) return;
-      const ready = loaded.filter((card) => !isVagueFront(card.front));
+      if (cancelled) return;
+      const ready = loaded.filter((card) => !isBrokenCard(card));
       setCards(ready);
       setSkipped(loaded.length - ready.length);
     });
@@ -48,15 +60,57 @@ export function useQuiz(initialSubjectId: number | null) {
   const toggleType = (type: QuestionType) =>
     setTypes((prev) => (prev.includes(type) ? (prev.length > 1 ? prev.filter((t) => t !== type) : prev) : [...prev, type]));
 
-  const start = () => {
-    const built = buildQuiz(cards, { count, types: usable }, Math.random);
-    if (built.length === 0) return;
+  const begin = (built: Question[]) => {
     setQuestions(built);
     setIndex(0);
     setOutcomes([]);
     setCurrent(null);
     setStudiedMissed(false);
     setPhase('playing');
+  };
+
+  /** Lets the model write better wrong answers for the multiple-choice questions, then starts. Stopping keeps the rest as they were. */
+  const startWithAi = async (built: Question[]) => {
+    stopped.current = false;
+    try {
+      setPrep({ kind: 'working', done: 0, total: built.filter((q) => q.type === 'choice').length });
+      await ensureModelReady((percent) => setPrep({ kind: 'downloading', percent }));
+      const improved = await improveChoices(
+        built,
+        llamaWriter,
+        Math.random,
+        (progress) => setPrep({ kind: 'working', ...progress }),
+        () => stopped.current,
+      );
+      setPrep({ kind: 'idle' });
+      begin(improved);
+    } catch (error) {
+      setPrep({ kind: 'failed', message: error instanceof Error ? error.message : 'Something went wrong.' });
+    }
+  };
+
+  const start = async () => {
+    const built = buildQuiz(cards, { count, types: usable }, Math.random);
+    if (built.length === 0) return;
+    if (!useAi.value || !built.some((q) => q.type === 'choice')) return begin(built);
+    if (await isModelDownloaded()) return startWithAi(built);
+    Alert.alert(
+      'Download the model?',
+      `This needs a one-time download of about ${MODEL.sizeLabel}. Use Wi-Fi. After that it works offline.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Download', onPress: () => startWithAi(built) },
+      ],
+    );
+  };
+
+  const ai: QuizAi = {
+    enabled: useAi.value,
+    onToggle: useAi.set,
+    status: prep,
+    onStop: () => {
+      stopped.current = true;
+    },
   };
 
   const submit = (answer: Answer) => {
@@ -91,8 +145,8 @@ export function useQuiz(initialSubjectId: number | null) {
   const backToSetup = () => setPhase('setup');
 
   return {
-    subjectId, setSubjectId, count, setCount, types, toggleType, available, max,hasCards: cards.length > 0, skipped,
+    subjectId, setSubjectId, count, setCount, types, toggleType, available, max, hasCards: cards.length > 0, skipped,
     phase, questions, index, current, outcomes, studiedMissed,
-    start, submit, markCorrect, next, studyMissed, backToSetup,
+    start, submit, markCorrect, next, studyMissed, backToSetup, ai,
   };
 }

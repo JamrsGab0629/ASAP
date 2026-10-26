@@ -2,7 +2,7 @@ import { BOILERPLATE, scoreUnit } from '@/features/shorten/extractive';
 import { contentWords, wordMatches } from '@/features/shorten/words';
 import { cleanSentence, wordCount } from './text';
 import type { Context, Generator, RawSuggestion } from './types';
-
+import { isCutOff } from '../cardQuality';
 export const BLANK = '_____';
 const MIN_WORDS = 6;
 const MAX_WORDS = 35;
@@ -35,7 +35,7 @@ function makeBlank(sentence: string, answer: string): { front: string; back: str
 
 const eligible = (sentence: string) => {
   const words = wordCount(sentence);
-  return words >= MIN_WORDS && words <= MAX_WORDS && !sentence.includes('?') && !BOILERPLATE.test(sentence) && !FILLER.test(sentence);
+  return words >= MIN_WORDS && words <= MAX_WORDS && !sentence.includes('?') && !BOILERPLATE.test(sentence) && !FILLER.test(sentence) && !isCutOff(sentence);
 };
 
 /** Cards from what the student highlighted. A highlighted phrase becomes the hidden answer. */

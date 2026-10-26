@@ -28,3 +28,13 @@ export function wordMatches(text: string): { word: string; index: number }[] {
   }
   return found;
 }
+
+/** True when two words are the same word in a different form: use / used, translate / translated, organize / organization. */
+export const related = (a: string, b: string): boolean => {
+  if (a === b) return true;
+  const short = Math.min(a.length, b.length);
+  if (short >= 3 && (a.startsWith(b) || b.startsWith(a))) return true;
+  let i = 0;
+  while (i < short && a[i] === b[i]) i++;
+  return i >= 5;
+};

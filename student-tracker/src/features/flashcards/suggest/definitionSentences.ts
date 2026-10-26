@@ -1,6 +1,6 @@
 import { capitalizeFirst, cleanSentence, lowerArticle, wordCount } from './text';
 import type { Generator, RawSuggestion } from './types';
-
+import { isCutOff } from '../cardQuality';
 const COPULA = /\b(is defined as|are defined as|refers to|refer to|means|is|are)\b/i;
 const NOT_SUBJECTS = new Set([
   'it', 'this', 'that', 'these', 'those', 'they', 'there', 'he', 'she', 'we', 'you', 'i', 'which', 'who', 'what', 'here',
@@ -27,7 +27,7 @@ export const definitionGenerator: Generator = {
     units.forEach((unit, position) => {
       if (unit.heading) return;
       const sentence = cleanSentence(unit.text);
-      if (sentence.includes('?') || wordCount(sentence) < 6 || wordCount(sentence) > 40) return;
+     if (sentence.includes('?') || isCutOff(sentence) || wordCount(sentence) < 6 || wordCount(sentence) > 40) return;
 
       const match = COPULA.exec(sentence);
       if (!match) return;

@@ -1,5 +1,6 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ChevronLeft } from 'lucide-react-native';
+import { useEffect, useRef } from 'react';
 import { ScrollView, Text, View, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { fonts, space } from '@/constants/theme';
@@ -18,14 +19,25 @@ export default function QuizScreen() {
   const subjects = useSubjectOptions();
   const { subjectId: param } = useLocalSearchParams<{ subjectId?: string }>();
   const quiz = useQuiz(param ? Number(param) : null);
+  const scroll = useRef<ScrollView>(null);
 
   const question = quiz.questions[quiz.index];
   const QuestionView = question ? QUESTION_VIEWS[question.type] : null;
   const title = quiz.phase === 'results' ? 'Results' : quiz.phase === 'playing' ? `Question ${quiz.index + 1} of ${quiz.questions.length}` : 'Quiz';
 
+  // After an answer, bring the feedback and the Next button into view. For a new question or the results, go back to the top.
+  useEffect(() => {
+    if (quiz.phase === 'playing' && quiz.current) {
+      const timer = setTimeout(() => scroll.current?.scrollToEnd({ animated: true }), 60);
+      return () => clearTimeout(timer);
+    }
+    scroll.current?.scrollTo({ y: 0, animated: false });
+  }, [quiz.phase, quiz.index, quiz.current]);
+
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
       <ScrollView
+        ref={scroll}
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={{ padding: space.xl, paddingTop: insets.top + space.lg, paddingBottom: insets.bottom + space.xxl, gap: space.xl }}
       >
@@ -50,6 +62,7 @@ export default function QuizScreen() {
             hasCards={quiz.hasCards}
             onStart={quiz.start}
             skipped={quiz.skipped}
+            ai={quiz.ai}
           />
         )}
 
