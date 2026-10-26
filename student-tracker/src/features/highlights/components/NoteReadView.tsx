@@ -1,11 +1,12 @@
 import { Highlighter } from 'lucide-react-native';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { Alert, Pressable, Text, View } from 'react-native';
 import { fonts, radius, space } from '@/constants/theme';
 import { LengthSelector } from '@/features/shorten/components/LengthSelector';
 import { ShortenedView } from '@/features/shorten/components/ShortenedView';
+import { SimplifyBar } from '@/features/shorten/components/SimplifyBar';
 import { LENGTH_LEVELS } from '@/features/shorten/levels';
-import { shorten } from '@/features/shorten/shorten';
+import { useSimplifiedShorten } from '@/features/shorten/simplify/useSimplifiedShorten';
 import { useTheme } from '@/theme';
 import type { Highlight } from '../types';
 import { useHighlights } from '../useHighlights';
@@ -21,7 +22,8 @@ export function NoteReadView({ noteId, body }: Props) {
   const [levelKey, setLevelKey] = useState(LENGTH_LEVELS[0].key);
 
   const level = LENGTH_LEVELS.find((l) => l.key === levelKey) ?? LENGTH_LEVELS[0];
-  const result = useMemo(() => shorten(body, level.ratio), [body, level.ratio]);
+  const simple = useSimplifiedShorten(body, level);
+  const result = simple.result;
 
   const confirmRemove = (highlight: Highlight) =>
     Alert.alert('Remove highlight?', highlight.text.length > 80 ? `${highlight.text.slice(0, 80)}…` : highlight.text, [
@@ -53,6 +55,16 @@ export function NoteReadView({ noteId, body }: Props) {
       <LengthSelector levels={LENGTH_LEVELS} selected={level.key} onSelect={setLevelKey} />
       {status && <Text style={{ fontFamily: fonts.regular, fontSize: 13, color: colors.textMuted }}>{status}</Text>}
 
+      {simple.isAi && result.shortened && (
+        <SimplifyBar
+          status={simple.status}
+          pendingCount={simple.pendingCount}
+          rewrittenCount={result.rewritten}
+          onStart={simple.start}
+          onCancel={simple.cancel}
+        />
+      )}
+
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: space.md }}>
         <Text style={{ flex: 1, fontFamily: fonts.regular, fontSize: 13, color: colors.textMuted }}>
           {highlights.length === 0 ? 'Tap a sentence to highlight it.' : 'Tap a highlight to remove it.'}
@@ -69,7 +81,7 @@ export function NoteReadView({ noteId, body }: Props) {
       {level.ratio >= 1 ? (
         renderText(body)
       ) : (
-        <ShortenedView key={level.key} blocks={result.blocks} renderKept={renderText} />
+        <ShortenedView key={level.key} blocks={result.blocks} renderKept={renderText} plain={result.rewritten > 0} />
       )}
 
       {listOpen && <HighlightListSheet highlights={highlights} onRemove={remove} onClose={() => setListOpen(false)} />}

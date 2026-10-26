@@ -16,6 +16,10 @@ export type ShortenResult = {
   totalWords: number;
   /** false when the note is too short to shorten */
   shortened: boolean;
+    /** The sentences that were kept, as written in the note. These are the ones the model can reword. */
+  keptSentences: string[];
+  /** How many of the kept sentences were swapped for a reworded version */
+  rewritten: number;
 };
 
 /** Decides which sentences to keep. Today that is the rule-based one in extractive.ts. */

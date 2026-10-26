@@ -9,10 +9,12 @@ type Props = {
   blocks: Block[];
   /** How to draw text that is shown. The caller decides, so highlights keep working. */
   renderKept: (text: string) => ReactNode;
+  /** Draw shown text as plain text instead. Used when some sentences were reworded, since highlights match the original wording. */
+  plain?: boolean;
 };
 
 /** The shortened note. Hidden parts are a tappable bar that reveals the original text in place. */
-export function ShortenedView({ blocks, renderKept }: Props) {
+export function ShortenedView({ blocks, renderKept, plain = false }: Props) {
   const { colors } = useTheme();
   const [open, setOpen] = useState<ReadonlySet<number>>(new Set());
 
@@ -27,7 +29,18 @@ export function ShortenedView({ blocks, renderKept }: Props) {
   return (
     <View style={{ gap: space.md }}>
       {blocks.map((block, index) => {
-        if (block.kind === 'kept') return <View key={index}>{renderKept(block.text.trimEnd())}</View>;
+        if (block.kind === 'kept') {
+          const text = block.text.trimEnd();
+          return (
+            <View key={index}>
+              {plain ? (
+                <Text style={{ fontFamily: fonts.regular, fontSize: 16, lineHeight: 26, color: colors.text }}>{text}</Text>
+              ) : (
+                renderKept(text)
+              )}
+            </View>
+          );
+        }
 
         const expanded = open.has(index);
         const Chevron = expanded ? ChevronUp : ChevronDown;
